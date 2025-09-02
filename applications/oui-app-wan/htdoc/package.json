@@ -1,0 +1,19 @@
+{
+  "name": "oui-app-wan",
+  "version": "1.0.0",
+  "description": "WAN interface management for OUI",
+  "main": "index.vue",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "vue": "^3.0.0",
+    "element-plus": "^2.0.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.0.0",
+    "vite": "^4.0.0"
+  }
+}

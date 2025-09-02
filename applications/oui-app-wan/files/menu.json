@@ -1,0 +1,12 @@
+{
+    "/network/wan": {
+        "title": "WAN",
+        "view": "wan",
+        "index": 10,
+        "locales": {
+            "en": "WAN",
+            "zh-CN": "WAN口",
+            "zh-TW": "WAN口"
+        }
+    }
+}
