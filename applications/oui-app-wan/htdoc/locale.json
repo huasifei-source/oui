@@ -9,6 +9,8 @@
     "Link State": "Link State",
     "Link Up": "Link Up",
     "Link Down": "Link Down",
+    "Full Duplex": "Full Duplex",
+    "Half Duplex": "Half Duplex",
     "Protocol": "Protocol",
     "IP Address": "IP Address",
     "Gateway": "Gateway",
@@ -62,6 +64,12 @@
     "Please enter IPv6 address": "Please enter IPv6 address",
     "Invalid IPv6 address format": "Invalid IPv6 address format",
     "Please enter IPv6 gateway": "Please enter IPv6 gateway",
+    "Global": "Global",
+    "Link Local": "Link Local",
+    "Site Local": "Site Local",
+    "Host Local": "Host Local",
+    "Invalid": "Invalid",
+    "And {count} more addresses": "And {count} more addresses",
     "Confirm": "Confirm"
   },
   "zh-CN": {
@@ -74,6 +82,8 @@
     "Link State": "链路状态",
     "Link Up": "链路正常",
     "Link Down": "链路断开",
+    "Full Duplex": "全双工",
+    "Half Duplex": "半双工",
     "Protocol": "协议",
     "IP Address": "IP地址",
     "Gateway": "网关",
@@ -127,6 +137,12 @@
     "Please enter IPv6 address": "请输入IPv6地址",
     "Invalid IPv6 address format": "IPv6地址格式无效",
     "Please enter IPv6 gateway": "请输入IPv6网关",
+    "Global": "全局",
+    "Link Local": "本地链路",
+    "Site Local": "站点本地",
+    "Host Local": "主机本地",
+    "Invalid": "无效",
+    "And {count} more addresses": "还有 {count} 个地址",
     "Confirm": "确认"
   },
   "zh-TW": {
@@ -139,6 +155,8 @@
     "Link State": "鏈路狀態",
     "Link Up": "鏈路正常",
     "Link Down": "鏈路斷開",
+    "Full Duplex": "全雙工",
+    "Half Duplex": "半雙工",
     "Protocol": "協定",
     "IP Address": "IP位址",
     "Gateway": "閘道",
@@ -192,6 +210,12 @@
     "Please enter IPv6 address": "請輸入IPv6位址",
     "Invalid IPv6 address format": "IPv6位址格式無效",
     "Please enter IPv6 gateway": "請輸入IPv6閘道",
+    "Global": "全域",
+    "Link Local": "本機鏈路",
+    "Site Local": "站點本機",
+    "Host Local": "主機本機",
+    "Invalid": "無效",
+    "And {count} more addresses": "還有 {count} 個位址",
     "Confirm": "確認"
   }
 }

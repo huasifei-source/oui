@@ -21,6 +21,54 @@ local function safe_read_file(path)
     return content and content:gsub('%s+$', '') or nil
 end
 
+-- 获取网络接口链路信息
+local function get_link_info(ifname)
+    if not ifname then
+        return nil
+    end
+    
+    local link_info = {}
+    
+    -- 尝试从sysfs获取基本信息
+    local speed_file = '/sys/class/net/' .. ifname .. '/speed'
+    local duplex_file = '/sys/class/net/' .. ifname .. '/duplex'
+    
+    local speed_content = safe_read_file(speed_file)
+    local duplex_content = safe_read_file(duplex_file)
+    
+    if speed_content and speed_content ~= '-1' then
+        link_info.speed = tonumber(speed_content)
+    end
+    
+    if duplex_content then
+        link_info.duplex = (duplex_content == 'full')
+        link_info.link_mode = speed_content and (speed_content .. 'M ' .. duplex_content .. ' duplex') or nil
+    end
+    
+    -- 尝试使用ethtool获取更详细信息（如果可用）
+    local ethtool_cmd = 'ethtool ' .. ifname .. ' 2>/dev/null'
+    local ethtool_output = io.popen(ethtool_cmd):read('*a')
+    
+    if ethtool_output and ethtool_output ~= '' then
+        -- 解析ethtool输出
+        local speed_match = ethtool_output:match('Speed: (%d+)Mb/s')
+        local duplex_match = ethtool_output:match('Duplex: (%w+)')
+        
+        if speed_match then
+            link_info.speed = tonumber(speed_match)
+        end
+        
+        if duplex_match then
+            link_info.duplex = (duplex_match:lower() == 'full')
+            if link_info.speed then
+                link_info.link_mode = link_info.speed .. 'M ' .. duplex_match .. ' Duplex'
+            end
+        end
+    end
+    
+    return link_info
+end
+
 -- 获取WAN接口名称
 function M.get_wan_ifname()
     -- 首先尝试从UCI获取
@@ -83,15 +131,41 @@ function M.get_wan_status()
     -- 安全获取接口状态
     local network_status = {}
     local device_status = {}
+    local wan6_status = {}
     
     local ok1, result1 = pcall(ubus.call, 'network.interface.wan', 'status', {})
     if ok1 and result1 then
         network_status = result1
     end
     
+    -- 获取IPv6接口状态
+    local ok1_6, result1_6 = pcall(ubus.call, 'network.interface.wan6', 'status', {})
+    if ok1_6 and result1_6 then
+        wan6_status = result1_6
+        -- 合并IPv6地址信息到主状态中
+        if wan6_status['ipv6-address'] then
+            network_status['ipv6-address'] = wan6_status['ipv6-address']
+        end
+        -- 合并IPv6路由信息
+        if wan6_status.route then
+            network_status.route = network_status.route or {}
+            for _, route in ipairs(wan6_status.route) do
+                table.insert(network_status.route, route)
+            end
+        end
+    end
+    
     local ok2, result2 = pcall(ubus.call, 'network.device', 'status', { name = wan_ifname })
     if ok2 and result2 then
         device_status = result2
+    end
+    
+    -- 尝试获取更详细的链路信息
+    local link_info = get_link_info(wan_ifname)
+    if link_info then
+        device_status.speed = link_info.speed or device_status.speed
+        device_status.duplex = link_info.duplex or device_status.duplex
+        device_status.link_mode = link_info.link_mode
     end
     
     -- 安全获取流量统计
@@ -129,6 +203,7 @@ function M.get_wan_status()
             pending = network_status.pending or false,
             autostart = network_status.autostart or false,
             ipv4_address = network_status['ipv4-address'] or {},
+            ipv6_address = network_status['ipv6-address'] or {},
             route = network_status.route or {},
             dns_server = network_status['dns-server'] or {},
             uptime = network_status.uptime or 0,
@@ -137,7 +212,8 @@ function M.get_wan_status()
                 up = device_status.up or false,
                 carrier = device_status.carrier or false,
                 speed = device_status.speed or 0,
-                duplex = device_status.duplex or false
+                duplex = device_status.duplex or false,
+                link_mode = device_status.link_mode or ''
             }
         },
         stats = stats,

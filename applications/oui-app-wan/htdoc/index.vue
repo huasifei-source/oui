@@ -1,5 +1,5 @@
 <template>
-  <el-space direction="vertical" fill>
+  <el-space direction="vertical" fill style="width: 100%;">
     <!-- WAN状态概览 -->
     <el-card :header="$t('WAN Status')" fill>
       <el-row :gutter="20">
@@ -12,16 +12,40 @@
               </el-tag>
             </el-descriptions-item>
             <el-descriptions-item :label="$t('Link State')">
-              <el-tag :type="wanStatus.status.device.carrier ? 'success' : 'warning'">
-                {{ wanStatus.status.device.carrier ? $t('Link Up') : $t('Link Down') }}
-              </el-tag>
+              <div>
+                <el-tag :type="wanStatus.status.device.carrier ? 'success' : 'warning'">
+                  {{ wanStatus.status.device.carrier ? $t('Link Up') : $t('Link Down') }}
+                </el-tag>
+                <div v-if="wanStatus.status.device.carrier && wanStatus.status.device.speed" style="margin-top: 6px;">
+                  <el-tag size="small" type="info" style="margin-right: 4px;">
+                    {{ formatLinkSpeed(wanStatus.status.device.speed) }}
+                  </el-tag>
+                  <el-tag size="small" :type="wanStatus.status.device.duplex ? 'success' : 'warning'">
+                    {{ wanStatus.status.device.duplex ? $t('Full Duplex') : $t('Half Duplex') }}
+                  </el-tag>
+                </div>
+              </div>
             </el-descriptions-item>
             <el-descriptions-item :label="$t('Protocol')">{{ wanStatus.config.proto.toUpperCase() }}</el-descriptions-item>
             <el-descriptions-item :label="$t('IP Address')" v-if="wanStatus.status.ipv4_address.length > 0">
               {{ wanStatus.status.ipv4_address[0].address }}/{{ wanStatus.status.ipv4_address[0].mask }}
             </el-descriptions-item>
+            <el-descriptions-item :label="$t('IPv6 Address')" v-if="wanStatus.status.ipv6_address && wanStatus.status.ipv6_address.length > 0">
+              <div v-for="(addr, index) in wanStatus.status.ipv6_address.slice(0, 3)" :key="addr.address" style="margin-bottom: 4px;">
+                <div style="font-family: monospace;">{{ addr.address }}/{{ addr.mask }}</div>
+                <div v-if="addr.scope" style="font-size: 12px;">
+                  <el-tag size="small" :type="getScopeTagType(addr.scope)">{{ formatScope(addr.scope) }}</el-tag>
+                </div>
+              </div>
+              <div v-if="wanStatus.status.ipv6_address.length > 3" style="font-size: 12px; color: #909399;">
+                {{ $t('And {count} more addresses', { count: wanStatus.status.ipv6_address.length - 3 }) }}
+              </div>
+            </el-descriptions-item>
             <el-descriptions-item :label="$t('Gateway')" v-if="getGateway()">
               {{ getGateway() }}
+            </el-descriptions-item>
+            <el-descriptions-item :label="$t('IPv6 Gateway')" v-if="getIpv6Gateway()">
+              {{ getIpv6Gateway() }}
             </el-descriptions-item>
             <el-descriptions-item :label="$t('DNS Servers')" v-if="wanStatus.status.dns_server.length > 0">
               {{ wanStatus.status.dns_server.join(', ') }}
@@ -142,8 +166,6 @@
             <el-select v-model="wanConfig.ipv6_proto" @change="onIpv6ProtocolChange" style="width: 200px">
               <el-option label="DHCPv6" value="dhcpv6"/>
               <el-option label="Static IPv6" value="static"/>
-              <el-option label="6in4 Tunnel" value="6in4"/>
-              <el-option label="6to4 Tunnel" value="6to4"/>
             </el-select>
           </el-form-item>
 
@@ -191,20 +213,6 @@
           <template v-if="wanConfig.ipv6_proto === 'dhcpv6'">
             <el-alert :title="$t('DHCPv6 Mode')" type="info" :closable="false">
               {{ $t('DHCPv6 mode will automatically obtain IPv6 address and configuration from your ISP') }}
-            </el-alert>
-          </template>
-
-          <!-- 6in4隧道配置 -->
-          <template v-if="wanConfig.ipv6_proto === '6in4'">
-            <el-alert :title="$t('6in4 Tunnel')" type="warning" :closable="false">
-              {{ $t('6in4 tunnel requires configuration with a tunnel broker like Hurricane Electric') }}
-            </el-alert>
-          </template>
-
-          <!-- 6to4隧道配置 -->
-          <template v-if="wanConfig.ipv6_proto === '6to4'">
-            <el-alert :title="$t('6to4 Tunnel')" type="warning" :closable="false">
-              {{ $t('6to4 tunnel automatically configures IPv6 connectivity using your IPv4 address') }}
             </el-alert>
           </template>
         </template>
@@ -504,6 +512,46 @@ export default {
       } else {
         return `${minutes}m`
       }
+    },
+    
+    formatLinkSpeed(speed) {
+      if (!speed) return ''
+      
+      if (speed >= 1000) {
+        return `${speed / 1000}Gbps`
+      } else {
+        return `${speed}Mbps`
+      }
+    },
+    
+    getIpv6Gateway() {
+      const routes = this.wanStatus.status.route || []
+      const ipv6DefaultRoute = routes.find(r => r.target === '::' && r.mask === 0)
+      return ipv6DefaultRoute ? ipv6DefaultRoute.nexthop : ''
+    },
+    
+    formatScope(scope) {
+      const scopeMap = {
+        'global': this.$t('Global'),
+        'link': this.$t('Link Local'),
+        'site': this.$t('Site Local'),
+        'host': this.$t('Host Local'),
+        'universe': this.$t('Global'),
+        'nowhere': this.$t('Invalid')
+      }
+      return scopeMap[scope] || scope.toUpperCase()
+    },
+    
+    getScopeTagType(scope) {
+      const typeMap = {
+        'global': 'success',
+        'link': 'info',
+        'site': 'warning',
+        'host': 'info',
+        'universe': 'success',
+        'nowhere': 'danger'
+      }
+      return typeMap[scope] || 'info'
     }
   },
   created() {
