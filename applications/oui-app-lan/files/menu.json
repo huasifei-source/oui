@@ -1,0 +1,13 @@
+{
+    "/network/lan": {
+        "title": "LAN",
+        "view": "lan",
+        "index": 10,
+        "locales": {
+            "en": "LAN",
+            "zh-CN": "局域网",
+            "zh-TW": "區域網"
+        },
+        "svg":{"-xmlns":"http://www.w3.org/2000/svg","-xmlns:xlink":"http://www.w3.org/1999/xlink","-viewBox":"0 0 24 24","path":{"-d":"M2 5h20v4h-2V7H4v2H2V5zm0 10h4v4h12v-4h4v6H2v-6zm6 2h8v2H8v-2z","-fill":"currentColor"}}
+    }
+}
