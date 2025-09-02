@@ -241,7 +241,7 @@ export default {
   },
   beforeUnmount() {
     // 清理定时器
-    this.$timer.destroy('dhcp-leases')
+    this.$timer.stop('dhcp-leases')
   },
   methods: {
     async loadLanConfig() {
