@@ -613,9 +613,9 @@ export default {
       if (iface.ssid) {
         // 如果有多个接口，显示为 SSID1, SSID2 等
         if (radioInterfaces.length > 1) {
-          return `${iface.ssid}${index + 1}`
+          return `SSID${index + 1}(${iface.ssid})`
         } else {
-          return iface.ssid
+          return `SSID(${iface.ssid})`
         }
       } else {
         // 没有 SSID 时显示默认名称
