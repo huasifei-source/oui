@@ -864,7 +864,7 @@ export default {
   /* 新增：header和action区域的更深灰色色调 */
   --header-bg-light: linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%);
   --header-bg-dark: linear-gradient(135deg, #1f2937 0%, #111827 100%);
-  --header-text-light: #ffffff;
+  --header-text-light: #4d4d4d;
   --header-text-dark: #f9fafb;
   --header-border-light: #93c5fd;
   --header-border-dark: #374151;

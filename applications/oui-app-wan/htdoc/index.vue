@@ -570,7 +570,7 @@ export default {
   --bg-gradient-dark: linear-gradient(135deg, #0f172a 0%, #111827 100%);
   --header-bg-light: linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%);
   --header-bg-dark: linear-gradient(135deg, #1f2937 0%, #111827 100%);
-  --header-text-light: #ffffff;
+  --header-text-light: #4d4d4d;
   --header-text-dark: #f9fafb;
   --header-border-light: #93c5fd;
   --header-border-dark: #1f2937;
