@@ -280,20 +280,17 @@ export default {
   },
   created() {
     this.loadData()
-    this.initTheme()
   },
   mounted() {
     // 监听系统主题变化
     if (window.matchMedia) {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-      mediaQuery.addEventListener('change', this.handleThemeChange)
     }
   },
   beforeUnmount() {
     // 清理事件监听器
     if (window.matchMedia) {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-      mediaQuery.removeEventListener('change', this.handleThemeChange)
     }
   },
   methods: {
@@ -826,41 +823,6 @@ export default {
       this.restarting = false
     },
     
-    // 主题相关方法
-    initTheme() {
-      // 检查本地存储的主题设置
-      const savedTheme = localStorage.getItem('theme')
-      if (savedTheme) {
-        this.isDarkMode = savedTheme === 'dark'
-      } else {
-        // 检查系统主题偏好
-        this.isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
-      }
-      this.applyTheme()
-    },
-    
-    handleThemeChange(e) {
-      // 只有在没有手动设置主题时才跟随系统变化
-      if (!localStorage.getItem('theme')) {
-        this.isDarkMode = e.matches
-        this.applyTheme()
-      }
-    },
-    
-    applyTheme() {
-      const htmlElement = document.documentElement
-      if (this.isDarkMode) {
-        htmlElement.classList.add('dark')
-      } else {
-        htmlElement.classList.remove('dark')
-      }
-    },
-    
-    toggleTheme() {
-      this.isDarkMode = !this.isDarkMode
-      localStorage.setItem('theme', this.isDarkMode ? 'dark' : 'light')
-      this.applyTheme()
-    }
   }
 }
 </script>
