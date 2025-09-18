@@ -48,6 +48,9 @@ function M.get_wireless_config()
     
     -- 获取所有接口配置
     c:foreach('wireless', 'wifi-iface', function(section)
+        if section.mode ~= 'ap' then
+            return
+        end
         interfaces[section['.name']] = {
             name = section['.name'],
             device = section.device or '',
