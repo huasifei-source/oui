@@ -1,0 +1,12 @@
+{
+  "/network/wireless-repeater": {
+    "title": "Wireless Repeater",
+    "view": "wireless-repeater",
+    "index": 55,
+    "locales": {
+      "en": "Wireless Repeater",
+      "zh-CN": "无线中继",
+      "zh-TW": "無線中繼"
+    }
+  }
+}

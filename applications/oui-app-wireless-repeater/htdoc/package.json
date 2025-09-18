@@ -1,0 +1,9 @@
+{
+  "name": "oui-app-wireless-repeater",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "vue": "^3.4.0",
+    "element-plus": "^2.7.0"
+  }
+}
