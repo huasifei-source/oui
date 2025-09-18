@@ -1,4 +1,5 @@
 <template>
+  <div class="wan-container">
   <el-space direction="vertical" fill style="width: 100%;">
     <!-- WAN状态概览 -->
     <el-card :header="$t('WAN Status')" fill>
@@ -228,6 +229,7 @@
       </el-form>
     </el-card>
   </el-space>
+  </div>
 </template>
 
 <script>
@@ -562,6 +564,48 @@ export default {
 </script>
 
 <style scoped>
+.wan-container {
+  /* Theme variables aligned with Wireless app */
+  --bg-gradient-light: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  --bg-gradient-dark: linear-gradient(135deg, #0f172a 0%, #111827 100%);
+  --header-bg-light: linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%);
+  --header-bg-dark: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+  --header-text-light: #ffffff;
+  --header-text-dark: #f9fafb;
+  --header-border-light: #93c5fd;
+  --header-border-dark: #1f2937;
+  --panel-bg-light: #fafafa;
+  --panel-bg-dark: #1f1f1f;
+  --status-bg-light: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  --status-bg-dark: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  --status-text-light: #334155;
+  --status-text-dark: #cbd5e1;
+  --status-border-light: #cbd5e1;
+  --status-border-dark: #475569;
+  --text-secondary-light: #606266;
+  --text-secondary-dark: #a1a1aa;
+  padding: 20px;
+  min-height: 100vh;
+  background: var(--bg-gradient-light);
+}
+
+.dark .wan-container {
+  background: var(--bg-gradient-dark);
+}
+
+/* Themed Element Plus card headers within this page */
+:deep(.el-card__header) {
+  background: var(--header-bg-light);
+  color: var(--header-text-light);
+  border-bottom: 1px solid var(--header-border-light);
+}
+
+.dark :deep(.el-card__header) {
+  background: var(--header-bg-dark);
+  color: var(--header-text-dark);
+  border-bottom: 1px solid var(--header-border-dark);
+}
+
 .traffic-stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -571,13 +615,15 @@ export default {
 .speed-item, .traffic-item {
   text-align: center;
   padding: 12px;
-  background: #f5f7fa;
+  background: var(--status-bg-light);
   border-radius: 6px;
+  border: 1px solid var(--status-border-light);
+  color: var(--status-text-light);
 }
 
 .speed-label, .traffic-label {
   font-size: 12px;
-  color: #909399;
+  color: var(--text-secondary-light);
   margin-bottom: 4px;
 }
 
@@ -595,8 +641,18 @@ export default {
 
 .form-help {
   font-size: 12px;
-  color: #909399;
+  color: var(--text-secondary-light);
   margin-top: 4px;
+}
+
+.dark .speed-item, .dark .traffic-item {
+  background: var(--status-bg-dark);
+  border: 1px solid var(--status-border-dark);
+  color: var(--status-text-dark);
+}
+
+.dark .speed-label, .dark .traffic-label, .dark .form-help {
+  color: var(--text-secondary-dark);
 }
 </style>
 

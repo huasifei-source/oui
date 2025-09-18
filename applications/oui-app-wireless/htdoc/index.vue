@@ -1,5 +1,24 @@
 <template>
   <div class="wireless-container">
+
+    <!-- 全局操作 -->
+    <div class="global-actions" v-if="!loading">
+      <el-card shadow="never" class="action-card">
+        <div class="action-content">
+          <div class="action-info">
+            <el-icon class="action-icon"><Setting /></el-icon>
+            <span>{{ $t('Wireless Service Control') }}</span>
+          </div>
+          <div class="action-buttons">
+            <el-button type="success" @click="restartWireless" :loading="restarting" size="large">
+              <el-icon><Refresh /></el-icon>
+              {{ $t('Restart Wireless') }}
+            </el-button>
+          </div>
+        </div>
+      </el-card>
+    </div>
+
     <!-- 加载状态 -->
     <div v-if="loading" class="loading-container">
       <el-icon class="is-loading loading-icon"><Loading /></el-icon>
@@ -191,23 +210,7 @@
       </div>
     </div>
 
-    <!-- 全局操作 -->
-    <div class="global-actions" v-if="!loading">
-      <el-card shadow="never" class="action-card">
-        <div class="action-content">
-          <div class="action-info">
-            <el-icon class="action-icon"><Setting /></el-icon>
-            <span>{{ $t('Wireless Service Control') }}</span>
-          </div>
-          <div class="action-buttons">
-            <el-button type="success" @click="restartWireless" :loading="restarting" size="large">
-              <el-icon><Refresh /></el-icon>
-              {{ $t('Restart Wireless') }}
-            </el-button>
-          </div>
-        </div>
-      </el-card>
-    </div>
+
     
     <!-- 添加接口对话框 -->
     <el-dialog v-model="addInterfaceDialogVisible" :title="$t('Add Wireless Interface')" width="600px">
@@ -859,11 +862,11 @@ export default {
   --shadow-light: rgba(0, 0, 0, 0.1);
   --shadow-dark: rgba(0, 0, 0, 0.3);
   /* 新增：header和action区域的更深灰色色调 */
-  --header-bg-light: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+  --header-bg-light: linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%);
   --header-bg-dark: linear-gradient(135deg, #1f2937 0%, #111827 100%);
   --header-text-light: #ffffff;
   --header-text-dark: #f9fafb;
-  --header-border-light: #374151;
+  --header-border-light: #93c5fd;
   --header-border-dark: #374151;
 }
 
@@ -1153,7 +1156,7 @@ export default {
 }
 
 .global-actions {
-  margin-top: 24px;
+  margin-bottom: 24px;
 }
 
 .action-card {

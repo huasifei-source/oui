@@ -1,5 +1,6 @@
 <template>
-  <el-space direction="vertical" fill>
+  <div class="lan-container">
+  <el-space direction="vertical" fill style="width: 100%;">
     <!-- LAN接口配置 -->
     <el-card :header="$t('LAN Interface Configuration')">
         <el-form ref="lanForm" :model="lanConfig" :rules="lanRules" label-width="160px" size="large">
@@ -149,6 +150,7 @@
       </template>
     </el-dialog>
   </el-space>
+  </div>
 </template>
 
 <script>
@@ -455,10 +457,47 @@ export default {
 </script>
 
 <style scoped>
+.lan-container {
+  --bg-gradient-light: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  --bg-gradient-dark: linear-gradient(135deg, #0f172a 0%, #111827 100%);
+  --header-bg-light: linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%);
+  --header-bg-dark: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+  --header-text-light: #ffffff;
+  --header-text-dark: #f9fafb;
+  --header-border-light: #93c5fd;
+  --header-border-dark: #1f2937;
+  --text-secondary-light: #606266;
+  --text-secondary-dark: #a1a1aa;
+  padding: 20px;
+  min-height: 100vh;
+  background: var(--bg-gradient-light);
+}
+
+.dark .lan-container {
+  background: var(--bg-gradient-dark);
+}
+
+/* Theme card headers */
+:deep(.el-card__header) {
+  background: var(--header-bg-light);
+  color: var(--header-text-light);
+  border-bottom: 1px solid var(--header-border-light);
+}
+
+.dark :deep(.el-card__header) {
+  background: var(--header-bg-dark);
+  color: var(--header-text-dark);
+  border-bottom: 1px solid var(--header-border-dark);
+}
+
 .form-help {
   font-size: 12px;
-  color: #909399;
+  color: var(--text-secondary-light);
   margin-top: 4px;
+}
+
+.dark .form-help {
+  color: var(--text-secondary-dark);
 }
 
 /* 确保容器占满整个窗口 */

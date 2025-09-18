@@ -37,7 +37,7 @@ export default {
       showUserNameInput: false,
       formValue: {
         username: '',
-        password: ''
+        password: '123456'
       },
       rules: {
         username: {

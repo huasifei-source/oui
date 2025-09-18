@@ -71,7 +71,7 @@
                 </el-select>
               </el-form-item>
               <el-form-item v-if="needsPassword(form.encryption)" :label="$t('Password')">
-                <el-input v-model="form.key" type="password" show-password placeholder="••••••••" />
+                <el-input v-model="form.key" type="password" show-password :placeholder="$t('Password')" />
               </el-form-item>
               <el-form-item :label="$t('Bind firewall')">
                 <el-tag type="info">wan</el-tag>
@@ -291,21 +291,64 @@ export default {
 </script>
 
 <style scoped>
-.repeater-container { padding: 20px; }
+.repeater-container {
+  --bg-gradient-light: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  --bg-gradient-dark: linear-gradient(135deg, #0f172a 0%, #111827 100%);
+  --header-bg-light: linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%);
+  --header-bg-dark: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+  --header-text-light: #ffffff;
+  --header-text-dark: #f9fafb;
+  --header-border-light: #93c5fd;
+  --header-border-dark: #1f2937;
+  --panel-bg-light: #fafafa;
+  --panel-bg-dark: #1f1f1f;
+  --text-secondary-light: #606266;
+  --text-secondary-dark: #a1a1aa;
+  --status-bg-light: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  --status-bg-dark: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  --status-text-light: #334155;
+  --status-text-dark: #cbd5e1;
+  --status-border-light: #cbd5e1;
+  --status-border-dark: #475569;
+  padding: 20px;
+  min-height: 100vh;
+  background: var(--bg-gradient-light);
+}
+
+.dark .repeater-container { background: var(--bg-gradient-dark); }
+
 .repeater-card { border-radius: 12px; }
 .card-header { display:flex; justify-content:space-between; align-items:center; }
 .title { display:flex; align-items:center; gap:8px; font-weight:600; }
 .actions { display:flex; gap:8px; }
 .grid { display:grid; grid-template-columns: 1.2fr 1fr; gap:16px; }
-.panel { border-radius: 10px; }
+.panel { border-radius: 10px; background: var(--panel-bg-light); }
+.dark .panel { background: var(--panel-bg-dark); }
+
+/* Theme card headers inside panels */
+:deep(.el-card__header) {
+  background: var(--header-bg-light);
+  color: var(--header-text-light);
+  border-bottom: 1px solid var(--header-border-light);
+}
+.dark :deep(.el-card__header) {
+  background: var(--header-bg-dark);
+  color: var(--header-text-dark);
+  border-bottom: 1px solid var(--header-border-dark);
+}
+
 .panel-header { font-weight:600; }
 .inline-actions { margin-top: 12px; }
 .list-panel { margin-top: 16px; }
 .scan-table :deep(.el-table__row) { cursor: pointer; }
 .form-actions { display:flex; justify-content:flex-end; gap:8px; }
 .status-grid { display:grid; grid-template-columns: repeat(2, 1fr); gap:12px; }
-.status-item .label { font-size:12px; opacity:0.7; }
-.status-item .value { font-weight:600; }
+.status-item { background: var(--status-bg-light); border: 1px solid var(--status-border-light); border-radius: 8px; padding: 12px; }
+.dark .status-item { background: var(--status-bg-dark); border-color: var(--status-border-dark); }
+.status-item .label { font-size:12px; color: var(--text-secondary-light); }
+.dark .status-item .label { color: var(--text-secondary-dark); }
+.status-item .value { font-weight:600; color: var(--status-text-light); }
+.dark .status-item .value { color: var(--status-text-dark); }
 @media (max-width: 1024px) {
   .grid { grid-template-columns: 1fr; }
 }
