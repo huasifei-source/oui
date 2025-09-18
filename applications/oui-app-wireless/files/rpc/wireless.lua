@@ -245,21 +245,10 @@ function M.get_encryption_modes()
 end
 
 -- 获取支持的频宽模式
+-- 该方法已废弃，频宽模式现在在前端动态生成
 function M.get_htmodes()
-    return {
-        modes = {
-            { value = 'HT20', label = '20MHz (HT20)' },
-            { value = 'HT40', label = '40MHz (HT40)' },
-            { value = 'VHT20', label = '20MHz (VHT20)' },
-            { value = 'VHT40', label = '40MHz (VHT40)' },
-            { value = 'VHT80', label = '80MHz (VHT80)' },
-            { value = 'VHT160', label = '160MHz (VHT160)' },
-            { value = 'HE20', label = '20MHz (HE20)' },
-            { value = 'HE40', label = '40MHz (HE40)' },
-            { value = 'HE80', label = '80MHz (HE80)' },
-            { value = 'HE160', label = '160MHz (HE160)' }
-        }
-    }
+    -- 保留接口以兼容性，但不再使用
+    return { modes = {} }
 end
 
 -- 获取无线扫描结果

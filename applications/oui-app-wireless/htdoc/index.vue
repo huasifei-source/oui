@@ -19,7 +19,7 @@
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93s3.05-7.44 7-7.93v15.86zm2-15.86c3.94.49 7 3.85 7 7.93s-3.05 7.44-7 7.93V4.07z"/>
                   </svg>
                 </el-icon>
-                <span class="radio-name">{{ radioName }}</span>
+                <span class="radio-name">{{ getRadioDisplayName(radioName) }}</span>
                 <el-tag :type="getRadioStatus(radioName).type" size="small" class="status-tag">
                   {{ getRadioStatus(radioName).text }}
                 </el-tag>
@@ -67,7 +67,7 @@
                   <el-form-item :label="$t('Channel')">
                     <el-select v-model="radio.channel" @change="markRadioChanged(radioName)" style="width: 100%">
                       <el-option label="Auto" value="auto"/>
-                      <el-option v-for="ch in getChannelOptions(radio.band)" :key="ch.value" 
+                      <el-option v-for="ch in getChannelOptions(radioName)" :key="ch.value" 
                                 :label="ch.label" :value="ch.value"/>
                     </el-select>
                   </el-form-item>
@@ -75,26 +75,9 @@
                 <el-col :span="12">
                   <el-form-item :label="$t('HT Mode')">
                     <el-select v-model="radio.htmode" @change="markRadioChanged(radioName)" style="width: 100%">
-                      <el-option v-for="mode in htModes" :key="mode.value" 
+                      <el-option v-for="mode in getHtModeOptions(radioName)" :key="mode.value" 
                                 :label="mode.label" :value="mode.value"/>
                     </el-select>
-                  </el-form-item>
-                </el-col>
-              </el-row>
-              <el-row :gutter="20">
-                <el-col :span="12">
-                  <el-form-item :label="$t('TX Power')">
-                    <el-input-number 
-                      v-model.number="radio.txpower" 
-                      :min="1" :max="30" 
-                      style="width: 100%"
-                      @change="markRadioChanged(radioName)"
-                    />
-                  </el-form-item>
-                </el-col>
-                <el-col :span="12">
-                  <el-form-item :label="$t('Country')">
-                    <el-input v-model="radio.country" @change="markRadioChanged(radioName)" style="width: 100%"/>
                   </el-form-item>
                 </el-col>
               </el-row>
@@ -119,14 +102,14 @@
                 <el-tab-pane 
                   v-for="(iface, ifaceName) in getRadioInterfaces(radioName)" 
                   :key="ifaceName"
-                  :label="getInterfaceTabLabel(iface, ifaceName)"
+                  :label="getInterfaceDisplayName(iface, ifaceName, radioName)"
                   :name="ifaceName"
                 >
                   <div class="interface-content">
                     <!-- 接口状态 -->
                     <div class="interface-status">
                       <div class="interface-header">
-                        <span class="interface-name">{{ ifaceName }}</span>
+                        <span class="interface-name">{{ getInterfaceDisplayName(iface, ifaceName, radioName) }}</span>
                         <div class="interface-controls">
                           <el-switch 
                             v-model="iface.enabled" 
@@ -144,18 +127,9 @@
                     <!-- 接口配置表单 -->
                     <el-form :model="iface" label-width="120px" size="default" v-if="iface.enabled" class="interface-form">
                       <el-row :gutter="20">
-                        <el-col :span="12">
+                        <el-col :span="24">
                           <el-form-item :label="$t('SSID')">
                             <el-input v-model="iface.ssid" @change="markInterfaceChanged(ifaceName)"/>
-                          </el-form-item>
-                        </el-col>
-                        <el-col :span="12">
-                          <el-form-item :label="$t('Mode')">
-                            <el-select v-model="iface.mode" @change="markInterfaceChanged(ifaceName)" style="width: 100%">
-                              <el-option label="Access Point" value="ap"/>
-                              <el-option label="Station" value="sta"/>
-                              <el-option label="Ad-Hoc" value="adhoc"/>
-                            </el-select>
                           </el-form-item>
                         </el-col>
                       </el-row>
@@ -176,14 +150,6 @@
                         </el-col>
                       </el-row>
                       <el-row :gutter="20">
-                        <el-col :span="12">
-                          <el-form-item :label="$t('Network')">
-                            <el-select v-model="iface.network" @change="markInterfaceChanged(ifaceName)" style="width: 100%">
-                              <el-option label="LAN" value="lan"/>
-                              <el-option label="WAN" value="wan"/>
-                            </el-select>
-                          </el-form-item>
-                        </el-col>
                         <el-col :span="12">
                           <el-form-item :label="$t('Hidden Network')">
                             <el-switch v-model="iface.hidden" @change="markInterfaceChanged(ifaceName)"/>
@@ -233,10 +199,12 @@
             <el-icon class="action-icon"><Setting /></el-icon>
             <span>{{ $t('Wireless Service Control') }}</span>
           </div>
-          <el-button type="success" @click="restartWireless" :loading="restarting" size="large">
-            <el-icon><Refresh /></el-icon>
-            {{ $t('Restart Wireless') }}
-          </el-button>
+          <div class="action-buttons">
+            <el-button type="success" @click="restartWireless" :loading="restarting" size="large">
+              <el-icon><Refresh /></el-icon>
+              {{ $t('Restart Wireless') }}
+            </el-button>
+          </div>
         </div>
       </el-card>
     </div>
@@ -246,13 +214,6 @@
       <el-form :model="newInterface" label-width="120px">
         <el-form-item :label="$t('SSID')" required>
           <el-input v-model="newInterface.ssid" placeholder="Enter SSID"/>
-        </el-form-item>
-        
-        <el-form-item :label="$t('Mode')">
-          <el-select v-model="newInterface.mode">
-            <el-option label="Access Point" value="ap"/>
-            <el-option label="Station" value="sta"/>
-          </el-select>
         </el-form-item>
         
         <el-form-item :label="$t('Encryption')">
@@ -268,13 +229,6 @@
         
         <el-form-item :label="$t('Hidden Network')">
           <el-switch v-model="newInterface.hidden"/>
-        </el-form-item>
-        
-        <el-form-item :label="$t('Network')">
-          <el-select v-model="newInterface.network">
-            <el-option label="LAN" value="lan"/>
-            <el-option label="WAN" value="wan"/>
-          </el-select>
         </el-form-item>
       </el-form>
       
@@ -304,7 +258,7 @@ export default {
       radioConfigs: {},
       interfaceConfigs: {},
       encryptionModes: [],
-      htModes: [],
+      frequencyLists: {}, // 存储每个 radio 的频段列表
       addInterfaceDialogVisible: false,
       currentRadio: '',
       newInterface: {
@@ -320,11 +274,27 @@ export default {
       originalInterfaceConfigs: {}, // 原始接口配置
       changedRadios: new Set(), // 已修改的 radio
       changedInterfaces: new Set(), // 已修改的接口
-      activeInterfaceTabs: {} // 每个 radio 的活跃 tab
+      activeInterfaceTabs: {}, // 每个 radio 的活跃 tab
+      isDarkMode: false // 深色模式状态
     }
   },
   created() {
     this.loadData()
+    this.initTheme()
+  },
+  mounted() {
+    // 监听系统主题变化
+    if (window.matchMedia) {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+      mediaQuery.addEventListener('change', this.handleThemeChange)
+    }
+  },
+  beforeUnmount() {
+    // 清理事件监听器
+    if (window.matchMedia) {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+      mediaQuery.removeEventListener('change', this.handleThemeChange)
+    }
   },
   methods: {
     async loadData() {
@@ -334,7 +304,7 @@ export default {
           this.loadWirelessStatus(),
           this.loadWirelessConfig(),
           this.loadEncryptionModes(),
-          this.loadHtModes()
+          this.loadFrequencyLists()
         ])
         this.initTabStates()
       } catch (error) {
@@ -362,8 +332,7 @@ export default {
         for (const [radioName, radio] of Object.entries(radios || {})) {
           const config = {
             ...radio,
-            enabled: !radio.disabled,
-            txpower: parseInt(radio.txpower) || 20
+            enabled: !radio.disabled
           }
           this.radioConfigs[radioName] = { ...config }
           this.originalRadioConfigs[radioName] = { ...config }
@@ -374,7 +343,9 @@ export default {
         for (const [ifaceName, iface] of Object.entries(interfaces || {})) {
           const config = {
             ...iface,
-            enabled: !iface.disabled
+            enabled: !iface.disabled,
+            mode: 'ap', // 强制设置为 AP 模式
+            network: 'lan' // 强制设置为 lan 网络
           }
           this.interfaceConfigs[ifaceName] = { ...config }
           this.originalInterfaceConfigs[ifaceName] = { ...config }
@@ -397,12 +368,66 @@ export default {
       }
     },
     
-    async loadHtModes() {
+    async loadFrequencyLists() {
       try {
-        const { modes } = await this.$oui.call('wireless', 'get_htmodes')
-        this.htModes = modes || []
+        this.frequencyLists = {}
+        
+        // 等待无线状态和配置加载完成
+        await Promise.all([this.loadWirelessStatus(), this.loadWirelessConfig()])
+        
+        // 获取所有 radio 并加载其频段列表
+        for (const [radioName] of Object.entries(this.radioConfigs)) {
+          try {
+            // 尝试从无线状态中获取第一个可用的接口
+            const radioStatus = this.wirelessStatus[radioName]
+            if (radioStatus && radioStatus.interfaces && radioStatus.interfaces.length > 0) {
+              const firstInterface = radioStatus.interfaces[0]
+              const deviceName = firstInterface.ifname || firstInterface.section
+              
+              if (deviceName) {
+                const result = await this.$oui.ubus('iwinfo', 'freqlist', {
+                  device: deviceName
+                })
+                this.frequencyLists[radioName] = result.results || []
+              }
+            } else {
+              // 如果无线状态中没有接口，尝试从配置中查找
+              const interfaceNames = Object.keys(this.interfaceConfigs).filter(name => 
+                this.interfaceConfigs[name].device === radioName
+              )
+              
+              if (interfaceNames.length > 0) {
+                // 构造设备名称（通常是 phy-ap 格式）
+                const phyName = radioName.replace('radio', 'phy')
+                const deviceName = `${phyName}-ap0`
+                
+                try {
+                  const result = await this.$oui.ubus('iwinfo', 'freqlist', {
+                    device: deviceName
+                  })
+                  this.frequencyLists[radioName] = result.results || []
+                } catch (error) {
+                  console.error(`Failed to get freqlist for ${deviceName}, trying with radio name`)
+                  // 如果上面的方式失败，直接使用 radio 名称
+                  try {
+                    const result = await this.$oui.ubus('iwinfo', 'freqlist', {
+                      device: radioName
+                    })
+                    this.frequencyLists[radioName] = result.results || []
+                  } catch (e) {
+                    console.error(`Failed to get freqlist for ${radioName}:`, e)
+                    this.frequencyLists[radioName] = []
+                  }
+                }
+              }
+            }
+          } catch (error) {
+            console.error(`Failed to load frequency list for ${radioName}:`, error)
+            this.frequencyLists[radioName] = []
+          }
+        }
       } catch (error) {
-        console.error('Failed to load HT modes:', error)
+        console.error('Failed to load frequency lists:', error)
       }
     },
     
@@ -447,6 +472,48 @@ export default {
       return this.getRadioInterfaceList(radioName).length
     },
     
+    getRadioHwModes(radioName) {
+      const status = this.wirelessStatus[radioName]
+      return status?.config?.hwmodes_text || status?.interfaces?.[0]?.hwmodes_text || 'N/A'
+    },
+    
+    getRadioTxPower(radioName) {
+      const status = this.wirelessStatus[radioName]
+      const power = status?.config?.txpower || status?.interfaces?.[0]?.txpower
+      return power ? `${power}` : 'N/A'
+    },
+    
+    getRadioFrequency(radioName) {
+      const status = this.wirelessStatus[radioName]
+      const freq = status?.config?.frequency || status?.interfaces?.[0]?.frequency
+      return freq ? `${freq} MHz` : 'N/A'
+    },
+    
+    getRadioHardware(radioName) {
+      const status = this.wirelessStatus[radioName]
+      return status?.config?.hardware?.name || status?.interfaces?.[0]?.hardware?.name || 'N/A'
+    },
+    
+    getHtModeOptions(radioName) {
+      const displayName = this.getRadioDisplayName(radioName)
+      
+      if (displayName === '2.4G') {
+        // 2.4G 频段只显示 20MHz 和 40MHz
+        return [
+          { value: 'HT20', label: '20MHz (HT20)' },
+          { value: 'HT40', label: '40MHz (HT40)' }
+        ]
+      } else {
+        // 5G 频段显示更多选项
+        return [
+          { value: 'HE20', label: '20MHz (HE20)' },
+          { value: 'HE40', label: '40MHz (HE40)' },
+          { value: 'HE80', label: '80MHz (HE80)' },
+          { value: 'HE160', label: '160MHz (HE160)' }
+        ]
+      }
+    },
+    
     getRadioInterfaces(radioName) {
       const interfaces = {}
       for (const [ifaceName, iface] of Object.entries(this.interfaceConfigs)) {
@@ -461,42 +528,118 @@ export default {
       return Object.keys(this.getRadioInterfaces(radioName))
     },
     
-    getInterfaceTabLabel(iface, ifaceName) {
-      const ssid = iface.ssid || 'Unnamed'
-      const mode = iface.mode || 'ap'
-      return `${ssid} (${mode})`
+    // 获取 Radio 显示名称（2.4G, 5G 等）
+    getRadioDisplayName(radioName) {
+      const status = this.wirelessStatus[radioName]
+      let band = status?.config?.band || this.radioConfigs[radioName]?.band || ''
+      
+      // 如果没有band信息，尝试从频率判断
+      if (!band) {
+        const frequency = status?.config?.frequency || status?.interfaces?.[0]?.frequency
+        if (frequency) {
+          if (frequency >= 2400 && frequency <= 2500) {
+            band = '2g'
+          } else if (frequency >= 5000 && frequency <= 6000) {
+            band = '5g'
+          } else if (frequency >= 6000 && frequency <= 7000) {
+            band = '6g'
+          }
+        }
+      }
+      
+      // 如果还是没有频段信息，从动态频段列表判断
+      if (!band) {
+        const frequencyList = this.frequencyLists[radioName] || []
+        if (frequencyList.length > 0) {
+          const avgFreq = frequencyList.reduce((sum, freq) => sum + freq.mhz, 0) / frequencyList.length
+          if (avgFreq >= 2400 && avgFreq <= 2500) {
+            band = '2g'
+          } else if (avgFreq >= 5000 && avgFreq <= 6000) {
+            band = '5g'
+          } else if (avgFreq >= 6000 && avgFreq <= 7000) {
+            band = '6g'
+          }
+        }
+      }
+      
+      // 统计同频段的 radio 数量
+      const sameBandRadios = Object.keys(this.radioConfigs).filter(rName => {
+        const rStatus = this.wirelessStatus[rName]
+        let rBand = rStatus?.config?.band || this.radioConfigs[rName]?.band || ''
+        
+        // 同样的逻辑判断其他radio的频段
+        if (!rBand) {
+          const rFrequency = rStatus?.config?.frequency || rStatus?.interfaces?.[0]?.frequency
+          if (rFrequency) {
+            if (rFrequency >= 2400 && rFrequency <= 2500) {
+              rBand = '2g'
+            } else if (rFrequency >= 5000 && rFrequency <= 6000) {
+              rBand = '5g'
+            } else if (rFrequency >= 6000 && rFrequency <= 7000) {
+              rBand = '6g'
+            }
+          }
+        }
+        
+        return rBand === band
+      })
+      
+      let displayName = ''
+      if (band === '2g') {
+        displayName = '2.4G'
+      } else if (band === '5g') {
+        displayName = '5G'
+      } else if (band === '6g') {
+        displayName = '6G'
+      } else {
+        // 如果还是无法判断，基于radio名称
+        displayName = radioName.includes('1') ? '5G' : '2.4G'
+      }
+      
+      // 如果有多个相同频段的 radio，添加序号
+      if (sameBandRadios.length > 1) {
+        const index = sameBandRadios.indexOf(radioName)
+        displayName += ` (${index + 1})`
+      }
+      
+      return displayName
     },
     
-    getChannelOptions(band) {
-      if (band === '2g') {
-        return [
-          { label: 'Channel 1 (2412 MHz)', value: '1' },
-          { label: 'Channel 2 (2417 MHz)', value: '2' },
-          { label: 'Channel 3 (2422 MHz)', value: '3' },
-          { label: 'Channel 4 (2427 MHz)', value: '4' },
-          { label: 'Channel 5 (2432 MHz)', value: '5' },
-          { label: 'Channel 6 (2437 MHz)', value: '6' },
-          { label: 'Channel 7 (2442 MHz)', value: '7' },
-          { label: 'Channel 8 (2447 MHz)', value: '8' },
-          { label: 'Channel 9 (2452 MHz)', value: '9' },
-          { label: 'Channel 10 (2457 MHz)', value: '10' },
-          { label: 'Channel 11 (2462 MHz)', value: '11' },
-          { label: 'Channel 12 (2467 MHz)', value: '12' },
-          { label: 'Channel 13 (2472 MHz)', value: '13' }
-        ]
-      } else if (band === '5g') {
-        return [
-          { label: 'Channel 36 (5180 MHz)', value: '36' },
-          { label: 'Channel 40 (5200 MHz)', value: '40' },
-          { label: 'Channel 44 (5220 MHz)', value: '44' },
-          { label: 'Channel 48 (5240 MHz)', value: '48' },
-          { label: 'Channel 149 (5745 MHz)', value: '149' },
-          { label: 'Channel 153 (5765 MHz)', value: '153' },
-          { label: 'Channel 157 (5785 MHz)', value: '157' },
-          { label: 'Channel 161 (5805 MHz)', value: '161' }
-        ]
+    // 获取接口显示名称（SSID1, SSID2 等）
+    getInterfaceDisplayName(iface, ifaceName, radioName) {
+      const radioInterfaces = this.getRadioInterfaceList(radioName)
+      const index = radioInterfaces.indexOf(ifaceName)
+      
+      if (iface.ssid) {
+        // 如果有多个接口，显示为 SSID1, SSID2 等
+        if (radioInterfaces.length > 1) {
+          return `${iface.ssid}${index + 1}`
+        } else {
+          return iface.ssid
+        }
+      } else {
+        // 没有 SSID 时显示默认名称
+        return `SSID${index + 1}`
       }
-      return []
+    },
+    
+    getChannelOptions(radioName) {
+      const frequencyList = this.frequencyLists[radioName] || []
+      
+      // 如果没有频段列表，返回空数组
+      if (frequencyList.length === 0) {
+        console.warn(`No frequency list available for ${radioName}`)
+        return []
+      }
+      
+      // 将频段列表转换为信道选项
+      const options = frequencyList.map(freq => ({
+        label: `${freq.channel} (${freq.mhz} MHz)`,
+        value: freq.channel.toString()
+      }))
+      
+      console.log(`Channel options for ${radioName}:`, options)
+      return options
     },
     
     needsPassword(encryption) {
@@ -532,9 +675,7 @@ export default {
           radio: radioName,
           disabled: !radio.enabled,
           channel: radio.channel,
-          htmode: radio.htmode,
-          txpower: radio.txpower.toString(),
-          country: radio.country
+          htmode: radio.htmode
         })
         
         // 保存相关接口配置
@@ -544,17 +685,17 @@ export default {
               interface: ifaceName,
               disabled: !iface.enabled,
               ssid: iface.ssid,
-              mode: iface.mode,
+              mode: 'ap', // 强制设置为 AP 模式
               encryption: iface.encryption,
               key: iface.key,
               hidden: iface.hidden,
-              network: iface.network
+              network: 'lan'  // 固定为 lan 网络
             })
           }
         }
         
         // 重新加载配置（应用更改但不重启服务）
-        await this.$oui.call('wireless', 'reload_config')
+        await this.$oui.reloadConfig('wireless')
         
         // 重新加载本地配置状态
         await this.reloadWirelessConfig()
@@ -637,7 +778,7 @@ export default {
           encryption: this.newInterface.encryption,
           key: this.newInterface.key,
           hidden: this.newInterface.hidden,
-          network: this.newInterface.network
+          network: 'lan'  // 固定为 lan 网络
         })
         
         this.addInterfaceDialogVisible = false
@@ -683,16 +824,97 @@ export default {
         this.$message.error(this.$t('Failed to restart wireless service'))
       }
       this.restarting = false
+    },
+    
+    // 主题相关方法
+    initTheme() {
+      // 检查本地存储的主题设置
+      const savedTheme = localStorage.getItem('theme')
+      if (savedTheme) {
+        this.isDarkMode = savedTheme === 'dark'
+      } else {
+        // 检查系统主题偏好
+        this.isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+      }
+      this.applyTheme()
+    },
+    
+    handleThemeChange(e) {
+      // 只有在没有手动设置主题时才跟随系统变化
+      if (!localStorage.getItem('theme')) {
+        this.isDarkMode = e.matches
+        this.applyTheme()
+      }
+    },
+    
+    applyTheme() {
+      const htmlElement = document.documentElement
+      if (this.isDarkMode) {
+        htmlElement.classList.add('dark')
+      } else {
+        htmlElement.classList.remove('dark')
+      }
+    },
+    
+    toggleTheme() {
+      this.isDarkMode = !this.isDarkMode
+      localStorage.setItem('theme', this.isDarkMode ? 'dark' : 'light')
+      this.applyTheme()
     }
   }
 }
 </script>
 
 <style scoped>
+/* CSS 变量定义 */
+.wireless-container {
+  --bg-gradient-light: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  --bg-gradient-dark: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  --card-bg-light: rgba(255, 255, 255, 0.95);
+  --card-bg-dark: rgba(42, 42, 42, 0.95);
+  --card-border-light: rgba(255, 255, 255, 0.2);
+  --card-border-dark: rgba(255, 255, 255, 0.1);
+  --text-primary-light: #303133;
+  --text-primary-dark: #e4e4e7;
+  --text-secondary-light: #606266;
+  --text-secondary-dark: #a1a1aa;
+  --status-bg-light: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  --status-bg-dark: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  --status-text-light: #334155;
+  --status-text-dark: #cbd5e1;
+  --status-border-light: #cbd5e1;
+  --status-border-dark: #475569;
+  --interface-bg-light: #fafafa;
+  --interface-bg-dark: #1f1f1f;
+  --interface-card-light: white;
+  --interface-card-dark: #2a2a2a;
+  --save-bg-light: #fff9e6;
+  --save-bg-dark: #1c1917;
+  --save-border-light: #ffd04b;
+  --save-border-dark: #ca8a04;
+  --no-interface-border-light: #e4e7ed;
+  --no-interface-border-dark: #4b5563;
+  --shadow-light: rgba(0, 0, 0, 0.1);
+  --shadow-dark: rgba(0, 0, 0, 0.3);
+  /* 新增：header和action区域的更深灰色色调 */
+  --header-bg-light: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+  --header-bg-dark: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+  --header-text-light: #ffffff;
+  --header-text-dark: #f9fafb;
+  --header-border-light: #374151;
+  --header-border-dark: #374151;
+}
+
 .wireless-container {
   padding: 20px;
   min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: var(--bg-gradient-light);
+  transition: background 0.3s ease;
+}
+
+/* 深色模式 */
+.dark .wireless-container {
+  background: var(--bg-gradient-dark);
 }
 
 .loading-container {
@@ -701,7 +923,12 @@ export default {
   align-items: center;
   justify-content: center;
   height: 400px;
-  color: #606266;
+  color: var(--text-secondary-light);
+  transition: color 0.3s ease;
+}
+
+.dark .loading-container {
+  color: var(--text-secondary-dark);
 }
 
 .loading-icon {
@@ -738,16 +965,26 @@ export default {
 
 .radio-main-card {
   border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 8px 32px var(--shadow-light);
+  border: 1px solid var(--card-border-light);
+  background: var(--card-bg-light);
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
+}
+
+.dark .radio-main-card {
+  box-shadow: 0 8px 32px var(--shadow-dark);
+  border: 1px solid var(--card-border-dark);
+  background: var(--card-bg-dark);
 }
 
 .radio-main-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.dark .radio-main-card:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
 }
 
 .radio-header {
@@ -771,11 +1008,12 @@ export default {
 .radio-name {
   font-size: 18px;
   font-weight: 600;
-  color: #303133;
+  color: #1a1a1a;
+  transition: color 0.3s ease;
 }
 
-.status-tag {
-  margin-left: 8px;
+.dark .radio-name {
+  color: var(--header-text-dark);
 }
 
 .radio-actions {
@@ -787,14 +1025,22 @@ export default {
 .radio-status {
   margin-bottom: 24px;
   padding: 16px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--status-bg-light);
   border-radius: 12px;
-  color: white;
+  color: var(--status-text-light);
+  border: 1px solid var(--status-border-light);
+  transition: all 0.3s ease;
+}
+
+.dark .radio-status {
+  background: var(--status-bg-dark);
+  color: var(--status-text-dark);
+  border: 1px solid var(--status-border-dark);
 }
 
 .status-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 16px;
 }
 
@@ -805,16 +1051,23 @@ export default {
 .status-label {
   display: block;
   font-size: 12px;
-  opacity: 0.8;
+  opacity: 0.7;
   margin-bottom: 4px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  font-weight: 500;
 }
 
 .status-value {
   display: block;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
+  color: #1e293b;
+  transition: color 0.3s ease;
+}
+
+.dark .status-value {
+  color: #cbd5e1;
 }
 
 .radio-config {
@@ -840,9 +1093,14 @@ export default {
 }
 
 .interface-content {
-  background: #fafafa;
+  background: var(--interface-bg-light);
   border-radius: 8px;
   padding: 16px;
+  transition: background 0.3s ease;
+}
+
+.dark .interface-content {
+  background: var(--interface-bg-dark);
 }
 
 .interface-status {
@@ -854,14 +1112,25 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: 12px;
-  background: white;
+  background: var(--interface-card-light);
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px var(--shadow-light);
+  transition: all 0.3s ease;
+}
+
+.dark .interface-header {
+  background: var(--interface-card-dark);
+  box-shadow: 0 2px 8px var(--shadow-dark);
 }
 
 .interface-name {
   font-weight: 600;
-  color: #303133;
+  color: var(--text-primary-light);
+  transition: color 0.3s ease;
+}
+
+.dark .interface-name {
+  color: var(--text-primary-dark);
 }
 
 .interface-controls {
@@ -871,26 +1140,44 @@ export default {
 }
 
 .interface-form {
-  background: white;
+  background: var(--interface-card-light);
   padding: 16px;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.dark .interface-form {
+  background: var(--interface-card-dark);
+  box-shadow: 0 2px 8px var(--shadow-dark);
 }
 
 .no-interfaces {
   text-align: center;
   padding: 40px;
-  background: white;
+  background: var(--interface-card-light);
   border-radius: 8px;
-  border: 2px dashed #e4e7ed;
+  border: 2px dashed var(--no-interface-border-light);
+  transition: all 0.3s ease;
+}
+
+.dark .no-interfaces {
+  background: var(--interface-card-dark);
+  border: 2px dashed var(--no-interface-border-dark);
 }
 
 .save-actions {
   margin-top: 24px;
   padding: 16px;
-  background: #fff9e6;
+  background: var(--save-bg-light);
   border-radius: 8px;
-  border: 1px solid #ffd04b;
+  border: 1px solid var(--save-border-light);
+  transition: all 0.3s ease;
+}
+
+.dark .save-actions {
+  background: var(--save-bg-dark);
+  border: 1px solid var(--save-border-dark);
 }
 
 .save-alert {
@@ -909,9 +1196,14 @@ export default {
 
 .action-card {
   border-radius: 12px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border: none;
-  color: white;
+  background: var(--header-bg-light);
+  border: 1px solid var(--header-border-light);
+  transition: all 0.3s ease;
+}
+
+.dark .action-card {
+  background: var(--header-bg-dark);
+  border: 1px solid var(--header-border-dark);
 }
 
 .action-content {
@@ -921,13 +1213,24 @@ export default {
   padding: 8px 0;
 }
 
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
 .action-info {
   display: flex;
   align-items: center;
   gap: 12px;
-  color: white;
+  color: var(--header-text-light);
   font-size: 16px;
   font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.dark .action-info {
+  color: var(--header-text-dark);
 }
 
 .action-icon {
@@ -940,6 +1243,12 @@ export default {
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   border-radius: 16px 16px 0 0;
   padding: 20px 24px;
+  transition: all 0.3s ease;
+}
+
+.dark :deep(.el-card__header) {
+  background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 :deep(.el-card__body) {
@@ -955,6 +1264,16 @@ export default {
   color: #606266;
   font-weight: 500;
   padding: 0 16px;
+  transition: all 0.3s ease;
+}
+
+.dark :deep(.el-divider__text) {
+  background: rgba(42, 42, 42, 0.9);
+  color: #a1a1aa;
+}
+
+.dark :deep(.el-divider) {
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 :deep(.el-form-item) {
@@ -964,10 +1283,32 @@ export default {
 :deep(.el-form-item__label) {
   font-weight: 500;
   color: #303133;
+  transition: color 0.3s ease;
+}
+
+.dark :deep(.el-form-item__label) {
+  color: #f1f5f9;
 }
 
 :deep(.el-tabs__item) {
   font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.dark :deep(.el-tabs__item) {
+  color: #a1a1aa;
+}
+
+.dark :deep(.el-tabs__item.is-active) {
+  color: #60a5fa;
+}
+
+.dark :deep(.el-tabs__active-bar) {
+  background-color: #60a5fa;
+}
+
+.dark :deep(.el-tabs__nav-wrap::after) {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 :deep(.el-tabs__content) {
@@ -983,9 +1324,91 @@ export default {
   --el-switch-on-color: #409EFF;
 }
 
+.dark :deep(.el-switch) {
+  --el-switch-on-color: #60a5fa;
+}
+
 :deep(.el-tag) {
   border-radius: 6px;
   font-weight: 500;
+}
+
+/* 输入框深色模式 */
+.dark :deep(.el-input__wrapper) {
+  background-color: #374151;
+  border-color: #4b5563;
+}
+
+.dark :deep(.el-input__inner) {
+  color: #e4e4e7;
+  background-color: transparent;
+}
+
+.dark :deep(.el-input__inner::placeholder) {
+  color: #9ca3af;
+}
+
+.dark :deep(.el-input__wrapper:hover) {
+  border-color: #60a5fa;
+}
+
+.dark :deep(.el-input__wrapper.is-focus) {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 1px #60a5fa inset;
+}
+
+/* 选择框深色模式 */
+.dark :deep(.el-select .el-input__wrapper) {
+  background-color: #374151;
+  border-color: #4b5563;
+}
+
+.dark :deep(.el-select-dropdown) {
+  background-color: #374151;
+  border-color: #4b5563;
+}
+
+.dark :deep(.el-select-dropdown__item) {
+  color: #e4e4e7;
+}
+
+.dark :deep(.el-select-dropdown__item:hover) {
+  background-color: #4b5563;
+}
+
+.dark :deep(.el-select-dropdown__item.selected) {
+  background-color: #60a5fa;
+  color: white;
+}
+
+/* 对话框深色模式 */
+.dark :deep(.el-dialog) {
+  background-color: #2a2a2a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dark :deep(.el-dialog__header) {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dark :deep(.el-dialog__title) {
+  color: #e4e4e7;
+}
+
+.dark :deep(.el-dialog__body) {
+  color: #a1a1aa;
+}
+
+/* 消息提示深色模式 */
+.dark :deep(.el-message) {
+  background-color: #374151;
+  border-color: #4b5563;
+  color: #e4e4e7;
+}
+
+/* Empty 组件深色模式 */
+.dark :deep(.el-empty__description p) {
+  color: #a1a1aa;
 }
 
 /* 响应式设计 */
@@ -1020,6 +1443,15 @@ export default {
     flex-direction: column;
     gap: 16px;
     text-align: center;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .action-buttons .el-button {
+    width: 100%;
   }
 }
 </style>

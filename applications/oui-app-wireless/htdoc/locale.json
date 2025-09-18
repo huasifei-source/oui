@@ -50,7 +50,12 @@
     "Interface deleted successfully": "Interface deleted successfully",
     "Failed to delete interface": "Failed to delete interface",
     "Wireless service restarted": "Wireless service restarted",
-    "Failed to restart wireless service": "Failed to restart wireless service"
+    "Failed to restart wireless service": "Failed to restart wireless service",
+    "Frequency": "Frequency",
+    "HW Modes": "HW Modes",
+    "Hardware": "Hardware",
+    "Dark Mode": "Dark Mode",
+    "Light Mode": "Light Mode"
   },
   "zh-CN": {
     "Wireless Status": "无线状态",
@@ -103,7 +108,12 @@
     "Interface deleted successfully": "接口删除成功",
     "Failed to delete interface": "无法删除接口",
     "Wireless service restarted": "无线服务已重启",
-    "Failed to restart wireless service": "无法重启无线服务"
+    "Failed to restart wireless service": "无法重启无线服务",
+    "Frequency": "频率",
+    "HW Modes": "硬件模式",
+    "Hardware": "硬件",
+    "Dark Mode": "深色模式",
+    "Light Mode": "浅色模式"
   },
   "zh-TW": {
     "Wireless Status": "無線狀態",
@@ -156,6 +166,11 @@
     "Interface deleted successfully": "介面刪除成功",
     "Failed to delete interface": "無法刪除介面",
     "Wireless service restarted": "無線服務已重啟",
-    "Failed to restart wireless service": "無法重啟無線服務"
+    "Failed to restart wireless service": "無法重啟無線服務",
+    "Frequency": "頻率",
+    "HW Modes": "硬體模式",
+    "Hardware": "硬體",
+    "Dark Mode": "深色模式",
+    "Light Mode": "淺色模式"
   }
 }
