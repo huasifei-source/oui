@@ -8,7 +8,7 @@ include $(TOPDIR)/rules.mk
 
 APP_TITLE:=WAN
 APP_NAME:=wan
-APP_DEPENDS:=+lua-eco-uci +lua-eco-ubus +lua-eco-file
+APP_DEPENDS:=+lua-eco-uci +lua-eco-ubus
 
 include ../../oui.mk
 

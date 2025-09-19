@@ -2,7 +2,7 @@
     "/network/lan": {
         "title": "LAN",
         "view": "lan",
-        "index": 10,
+        "index": 9,
         "locales": {
             "en": "LAN",
             "zh-CN": "局域网",

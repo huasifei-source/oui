@@ -1,0 +1,12 @@
+{
+    "/Home": {
+        "title": "Home",
+        "view": "Home",
+        "index": 1,
+        "locales": {
+            "en": "Home",
+            "zh-CN": "首页",
+            "zh-TW": "首頁"
+        }
+    }
+}
